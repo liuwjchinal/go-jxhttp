@@ -1,0 +1,14 @@
+[
+{
+    "cmd": 913,
+    "url": "http://onsite.auth.xgsdk.com:8180/xgsdk/apiXgsdkAccount/verifySession?",
+    "request_type": "VerifySessionReq",
+    "response_type": "VerifySessionResp"
+},
+{
+    "cmd": 915,
+    "url": "http://onsite.recharge.xgsdk.com:8180/xgsdk/apiXgsdkPay/verifyOrder/channelId/sdkAppid?",
+    "request_type": "VerifyOrderReq",
+    "response_type": "VerifyOrderResp"
+}
+]

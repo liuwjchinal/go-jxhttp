@@ -1,0 +1,8 @@
+[
+    {
+	"handle": "paynotify",
+	"cmd": 917,
+	"notify_type": "PayNtf",
+	"response_type": "PayRsp"
+    }
+]
