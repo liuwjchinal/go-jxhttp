@@ -1,0 +1,101 @@
+package xgsdk;
+
+enum command {
+     CMD_REGISTER_REQ = 911;
+     CMD_REGISTER_RSP = 912;
+     CMD_VERIFYSESSION_REQ = 913;
+     CMD_VERIFYSESSION_RSP = 914;
+     CMD_VERIFYORDER_REQ = 915;
+     CMD_VERIFYORDER_RSP = 916;
+     CMD_PAY_NTF = 917;
+     CMD_PAY_RSP = 918;
+}
+
+message RegisterReq {
+	required uint32 id = 1;
+}
+
+message VerifySessionReq {
+	required string authInfo = 1;
+	optional string version = 2 [default=""];
+}
+
+message VerifySessionData {
+	optional string sessionId = 1;
+	optional string uId = 2;
+	optional string userName = 3;
+	optional string nickName = 4;
+	optional string state = 5;
+	optional string deviceId = 6;
+	optional string telephone = 7;
+	optional string mail = 8;
+	optional string sex = 9;
+	optional string birthday = 10;
+	optional string smallHeadIconUrl = 11;
+	optional string bigHeadIconUrl = 12;
+	optional string constellation = 13;
+	optional string balance = 14;
+	optional string level = 15;
+	optional string channelId = 16;
+}
+
+message VerifySessionResp {
+	required int32 code = 1;
+	required string msg = 2;
+	optional VerifySessionData data = 3;
+}
+
+message VerifyOrder {
+	required string orderId = 1;
+	required string sign = 2;
+}
+
+message VerifyOrderData {
+	optional string appId = 1;
+	optional string sdkAppid = 2;
+	optional string channelId = 3;
+	optional string sdkUid = 4;
+	optional string orderId = 5;
+	optional string appGoodsId = 6;
+	optional string appGoodsName = 7;
+	optional string appGoodsDesc = 8;
+	optional string appGoodsAmount = 9;
+	optional string totalPrice = 10;
+	optional string originalPrice = 11;
+	optional string custom = 12;
+}
+
+message VerifyOrderResp {
+	required int32 code = 1;
+	required string msg = 2;
+	optional VerifyOrderData data = 3;
+}
+
+message PayNtf {
+	optional string orderId = 1;
+	optional string sdkUid = 2;
+	optional string payStatus = 3;
+	optional string payTime = 4;
+	optional string failedDesc = 5;
+	optional string appId = 6;
+	optional string channelId = 7;
+	optional string appGoodsId = 8;
+	optional string appGoodsName = 9;
+	optional string appGoodsDesc = 10;
+	optional string appGoodsAmount = 11;
+	optional string totalPrice = 12;
+	optional string originalPrice = 13;
+	optional string zoneId = 14;
+	optional string serverId = 15;
+	optional string roleId = 16;
+	optional string roleName = 17;
+	optional string currencyName = 18;
+	optional string custom = 19;
+	optional string sign = 20;
+}
+
+message PayRsp {
+	required string code = 1;
+	required string msg = 2;
+	optional string orderId = 3;
+}
