@@ -9,6 +9,11 @@ enum command {
      CMD_VERIFYORDER_RSP = 916;
      CMD_PAY_NTF = 917;
      CMD_PAY_RSP = 918;
+
+     CMD_GMQUERY_REQ = 919;
+     CMD_GMQUERY_RSP = 920;
+     CMD_GMACTION_REQ = 921;
+     CMD_GMACTION_RSP = 922;
 }
 
 message RegisterReq {
@@ -98,4 +103,20 @@ message PayRsp {
 	required string code = 1;
 	required string msg = 2;
 	optional string orderId = 3;
+}
+
+message GMQueryReq {
+	optional string json = 1;
+}
+
+message GMQueryRsp {
+	optional string json = 1;
+}
+
+message GMActionReq {
+	optional string json = 1;
+}
+
+message GMActionRsp {
+	optional string json = 1;
 }
