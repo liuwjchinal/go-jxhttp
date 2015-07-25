@@ -79,7 +79,7 @@ func sendPayNotify() {
 }
 
 func ClientTest() {
-	conn, err := net.Dial("tcp", ":20002")
+	conn, err := net.Dial("tcp", *listenAddr)
 	if err != nil {
 		logger.Fatal(err)
 	}
