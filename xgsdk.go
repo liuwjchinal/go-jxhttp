@@ -101,7 +101,7 @@ func XGSDKReadNotify(s *Server, fn string, w http.ResponseWriter, r *http.Reques
 		return ErrUnknownGSID
 	}
 
-	c := s.findClient(uint32(gsid))
+	c := s.FindClient(uint32(gsid))
 	if c == nil {
 		logger.Printf("unknown gs id %d\n", gsid)
 		return ErrUnknownGSID
@@ -122,14 +122,14 @@ func XGSDKReadNotify(s *Server, fn string, w http.ResponseWriter, r *http.Reques
 
 	wait := new(sync.Mutex)
 	wait.Lock()
-	s.notifyClient(c, cfg.Cmd, ptr.(proto.Message), func(pb proto.Message) {
+	s.NotifyClient(c, cfg.Cmd, ptr.(proto.Message), func(args *callbackArgs) {
 		defer wait.Unlock()
-		resp, err := pbtojson(pb)
+		// resp, err := pbtojson(pb)
 		if err != nil {
 			logger.Println(err)
 			return
 		}
-		w.Write(resp)
+		// w.Write(resp)
 	})
 
 	// wait gs response

@@ -53,7 +53,7 @@ func sendAndRecv(conn net.Conn, cmd, seq int, pb proto.Message, pb2 proto.Messag
 
 func sendRegister(conn net.Conn) {
 	var req RegisterReq
-	req.Id = proto.Uint32(1)
+	req.Id = proto.Uint32(1000)
 	sendAndRecv(conn, int(Command_CMD_REGISTER_REQ), 1, &req, nil)
 }
 
@@ -65,7 +65,7 @@ func sendVerify(conn net.Conn) {
 }
 
 func sendPayNotify() {
-	resp, err := http.Get("http://127.0.0.1:8088/notify?fn=paynotify&appGoodsAmount=1&appGoodsDesc=paymentDes017&appGoodsId=payment019&appGoodsName=10&appId=xyfm&channelId=xiaomi&custom=1&orderId=100265&originalPrice=1&payStatus=1&payTime=&sdkUid=25613430&totalPrice=1&sign=fc1d381e6f45f92caadd1d923a1beb6e")
+	resp, err := http.Get("http://127.0.0.1:8088/notify?fn=paynotify&appGoodsAmount=1&appGoodsDesc=paymentDes017&appGoodsId=payment019&appGoodsName=10&appId=xyfm&channelId=xiaomi&custom=1000&orderId=100265&originalPrice=1&payStatus=1&payTime=&sdkUid=25613430&totalPrice=1&sign=fc1d381e6f45f92caadd1d923a1beb6e")
 	if err != nil {
 		logger.Println(err)
 		return

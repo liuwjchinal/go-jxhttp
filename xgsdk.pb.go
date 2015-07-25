@@ -18,6 +18,8 @@ It has these top-level messages:
 	VerifyOrderResp
 	PayNtf
 	PayRsp
+	GMOperateReq
+	GMOperateRsp
 */
 package main
 
@@ -39,6 +41,8 @@ const (
 	Command_CMD_VERIFYORDER_RSP   Command = 916
 	Command_CMD_PAY_NTF           Command = 917
 	Command_CMD_PAY_RSP           Command = 918
+	Command_CMD_GMOPERATE_REQ     Command = 919
+	Command_CMD_GMOPERATE_RSP     Command = 920
 )
 
 var Command_name = map[int32]string{
@@ -50,6 +54,8 @@ var Command_name = map[int32]string{
 	916: "CMD_VERIFYORDER_RSP",
 	917: "CMD_PAY_NTF",
 	918: "CMD_PAY_RSP",
+	919: "CMD_GMOPERATE_REQ",
+	920: "CMD_GMOPERATE_RSP",
 }
 var Command_value = map[string]int32{
 	"CMD_REGISTER_REQ":      911,
@@ -60,6 +66,8 @@ var Command_value = map[string]int32{
 	"CMD_VERIFYORDER_RSP":   916,
 	"CMD_PAY_NTF":           917,
 	"CMD_PAY_RSP":           918,
+	"CMD_GMOPERATE_REQ":     919,
+	"CMD_GMOPERATE_RSP":     920,
 }
 
 func (x Command) Enum() *Command {
@@ -645,6 +653,38 @@ func (m *PayRsp) GetOrderId() string {
 		return *m.OrderId
 	}
 	return ""
+}
+
+type GMOperateReq struct {
+	Json             []byte `protobuf:"bytes,1,opt,name=json" json:"json,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *GMOperateReq) Reset()         { *m = GMOperateReq{} }
+func (m *GMOperateReq) String() string { return proto.CompactTextString(m) }
+func (*GMOperateReq) ProtoMessage()    {}
+
+func (m *GMOperateReq) GetJson() []byte {
+	if m != nil {
+		return m.Json
+	}
+	return nil
+}
+
+type GMOperateRsp struct {
+	Json             []byte `protobuf:"bytes,1,opt,name=json" json:"json,omitempty"`
+	XXX_unrecognized []byte `json:"-"`
+}
+
+func (m *GMOperateRsp) Reset()         { *m = GMOperateRsp{} }
+func (m *GMOperateRsp) String() string { return proto.CompactTextString(m) }
+func (*GMOperateRsp) ProtoMessage()    {}
+
+func (m *GMOperateRsp) GetJson() []byte {
+	if m != nil {
+		return m.Json
+	}
+	return nil
 }
 
 func init() {

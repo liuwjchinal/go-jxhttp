@@ -1,0 +1,9 @@
+﻿{
+    "code":0,
+    "msg" : {
+        "data":[
+            {"id": "xiaomi", "name" : "小米"},
+            {"id": "jinshan", "name" : "金山通行证" },
+        ]
+    }
+}

@@ -1,13 +1,16 @@
 package main
 
 import (
+	"container/list"
 	"encoding/binary"
 	"errors"
 	proto "github.com/golang/protobuf/proto"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"sync"
+	"time"
 )
 
 var ErrInvalidPacket = errors.New("invalid packet")
@@ -15,10 +18,22 @@ var ErrInvalidCmd = errors.New("invalid command")
 var ErrUnknownGSID = errors.New("unknown gsid")
 var HeaderSize = 8
 
+type Header struct {
+	Cmd uint16
+	Len uint16
+	Seq uint32
+}
+
 type Server struct {
 	ntfch      chan []byte
 	clientlock sync.RWMutex
 	clientmap  map[uint32]*Client
+}
+
+type pendingRequest struct {
+	seq      uint32
+	cb       NotifyCallback
+	deadline time.Time
 }
 
 type Client struct {
@@ -31,30 +46,47 @@ type Client struct {
 	wb       []byte     // 发送buffer
 	seqlock  sync.Mutex // protect seq and seqmap
 	seq      uint32
-	seqmap   map[uint32]NotifyCallback
+	seqmap   map[uint32]*pendingRequest
+	timelist *list.List
 }
 
-type Header struct {
-	Cmd uint16
-	Len uint16
-	Seq uint32
+func (c *Client) addPendingRequest(cb NotifyCallback) uint32 {
+	r := &pendingRequest{
+		cb: cb,
+	}
+	c.seqlock.Lock()
+	r.seq = c.seq
+	c.seq++
+	c.seqmap[r.seq] = r
+	c.seqlock.Unlock()
+	return r.seq
 }
 
 func newClient(conn net.Conn) *Client {
 	c := &Client{
-		id:   0,
-		conn: conn,
-		r:    conn,
-		w:    conn,
-		rb:   make([]byte, 1024),
-		wb:   make([]byte, 1024),
+		id:     0,
+		conn:   conn,
+		r:      conn,
+		w:      conn,
+		rb:     make([]byte, 1024),
+		wb:     make([]byte, 1024),
+		seqmap: make(map[uint32]*pendingRequest),
 	}
 	return c
 }
 
+type callbackArgs struct {
+	s    *Server
+	c    *Client
+	cmd  int
+	seq  uint32
+	body []byte
+	err  error
+}
+
 type ClientReader func(*Server, *Client, int, uint32, []byte) error
 type NotifyReader func(*Server, string, http.ResponseWriter, *http.Request) error
-type NotifyCallback func(net.Conn, []byte) error
+type NotifyCallback func(*callbackArgs)
 
 func (s *Server) readRequestHeader(c *Client) (cmd int, size int, seq uint32, err error) {
 	if n, err := io.ReadFull(c.r, c.rb[0:HeaderSize]); n < HeaderSize || err != nil {
@@ -68,13 +100,10 @@ func (s *Server) readRequestHeader(c *Client) (cmd int, size int, seq uint32, er
 	return cmd, size, seq, nil
 }
 
-func (s *Server) notifyClient(c *Client, cmd int, pb proto.Message, cb func(proto.Message)) error {
+func (s *Server) NotifyClient(c *Client, cmd int, pb proto.Message, cb NotifyCallback) error {
 	var err error
 
-	c.seqlock.Lock()
-	seq := c.seq
-	c.seq++
-	c.seqlock.Unlock()
+	seq := c.addPendingRequest(cb)
 
 	c.sendlock.Lock()
 	defer c.sendlock.Unlock()
@@ -96,6 +125,7 @@ func (s *Server) notifyClient(c *Client, cmd int, pb proto.Message, cb func(prot
 		binary.LittleEndian.PutUint16(c.wb[2:4], uint16(HeaderSize))
 		_, err = c.w.Write(c.wb[0:8])
 	}
+
 	return err
 }
 
@@ -182,11 +212,29 @@ func procRegister(s *Server, c *Client, cmd int, seq uint32, body []byte) error 
 	return nil
 }
 
-func notifyCallback(s *Server, c *Client, cmd int, seq uint32, body []byte) error {
+func recvNotifyResp(s *Server, c *Client, cmd int, seq uint32, body []byte) error {
+	c.seqlock.Lock()
+	pending, ok := c.seqmap[seq]
+	if ok {
+		delete(c.seqmap, seq)
+	}
+	c.seqlock.Unlock()
+	if !ok {
+		return nil
+	}
+	args := &callbackArgs{
+		cmd:  cmd,
+		body: body,
+		seq:  seq,
+		s:    s,
+		c:    c,
+	}
+
+	pending.cb(args)
 	return nil
 }
 
-func (s *Server) findClient(id uint32) *Client {
+func (s *Server) FindClient(id uint32) *Client {
 	s.clientlock.RLock()
 	defer s.clientlock.RUnlock()
 
@@ -203,7 +251,7 @@ func (s *Server) findProc(cmd Command) ClientReader {
 	case Command_CMD_VERIFYSESSION_REQ, Command_CMD_VERIFYORDER_REQ:
 		return XGSDKReadRequest
 	default:
-		return notifyCallback
+		return recvNotifyResp
 	}
 	return nil
 }
@@ -280,6 +328,40 @@ func (s *Server) initHttpServer() error {
 			return
 		}
 		proc(s, fn, w, r)
+	})
+
+	http.HandleFunc("/gm", func(w http.ResponseWriter, r *http.Request) {
+		logger.Println(r)
+		b, _ := ioutil.ReadAll(r.Body)
+		b, err := GMQuery(s, b)
+		if err != nil {
+			logger.Println(err)
+			return
+		}
+		w.Write(b)
+	})
+
+	http.HandleFunc("/gminfo", func(w http.ResponseWriter, r *http.Request) {
+		logger.Println(r)
+		fn := r.FormValue("fn")
+		var b []byte
+		if fn == "zone" {
+			b = loadGMServerJson()
+		} else if fn == "channel" {
+			b = loadGMChannelJson()
+		} else {
+			logger.Println("invalid gminfo fn:", fn)
+			return
+		}
+		logger.Println("resp:\n", string(b))
+		d, err := GMEncode(b)
+		if err != nil {
+			logger.Println(err)
+		}
+		w.Write(d)
+
+		d, err = GMDecode(d)
+		logger.Println(string(d))
 	})
 	return nil
 }

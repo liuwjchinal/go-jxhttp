@@ -1,0 +1,14 @@
+﻿{
+    "code":0,
+    "msg":{
+        "zone":[
+            {"zoneId":"1","zoneName":"全区"}
+        ],
+        "data":[
+            {"sid":"20000","zoneId":"1","name":"1服"},
+            {"sid":"20001","zoneId":"1","name":"2服"},
+            {"sid":"20002","zoneId":"1","name":"3服"},
+            {"sid":"20003","zoneId":"1","name":"4服"}
+        ]
+    }
+}

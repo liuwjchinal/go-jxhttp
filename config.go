@@ -27,6 +27,22 @@ func init() {
 	notifyJsonMap = make(map[string]*NotifyJsonElem)
 }
 
+func loadGMServerJson() []byte {
+	b, err := ioutil.ReadFile("gmserver.json")
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
+func loadGMChannelJson() []byte {
+	b, err := ioutil.ReadFile("gmchannel.json")
+	if err != nil {
+		return nil
+	}
+	return b
+}
+
 func loadRequestJson() error {
 	b, err := ioutil.ReadFile("request.json")
 	if err != nil {
