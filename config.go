@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 )
 
 type RequestJsonElem struct {
@@ -32,7 +34,12 @@ func loadGMServerJson() []byte {
 	if err != nil {
 		return nil
 	}
-	return b
+	buf := bytes.NewBuffer(nil)
+	err = json.Compact(buf, b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buf.Bytes()
 }
 
 func loadGMChannelJson() []byte {
@@ -40,7 +47,12 @@ func loadGMChannelJson() []byte {
 	if err != nil {
 		return nil
 	}
-	return b
+	buf := bytes.NewBuffer(nil)
+	err = json.Compact(buf, b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return buf.Bytes()
 }
 
 func loadRequestJson() error {

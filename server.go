@@ -354,14 +354,11 @@ func (s *Server) initHttpServer() error {
 			return
 		}
 		logger.Println("resp:\n", string(b))
-		d, err := GMEncode(b)
-		if err != nil {
-			logger.Println(err)
-		}
-		w.Write(d)
-
-		d, err = GMDecode(d)
-		logger.Println(string(d))
+		// d, err := GMEncode(b)
+		// if err != nil {
+		// 	logger.Println(err)
+		// }
+		w.Write(b)
 	})
 	return nil
 }

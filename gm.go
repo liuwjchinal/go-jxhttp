@@ -154,9 +154,11 @@ func getServerID(b []byte) []int {
 	return a
 }
 
+type gsResp map[string]interface{}
+
 type gmResp struct {
-	Code int                        `json:"code"`
-	Msg  map[string]json.RawMessage `json:"msg"`
+	Code int               `json:"code"`
+	Msg  map[string]gsResp `json:"msg"`
 }
 
 func forwardGM2Client(s *Server, id int, pb proto.Message, resp *gmResp, wg *sync.WaitGroup, lock *sync.Mutex) {
@@ -173,9 +175,14 @@ func forwardGM2Client(s *Server, id int, pb proto.Message, resp *gmResp, wg *syn
 				logger.Println(err)
 				return
 			}
-			logger.Println("gs resp:\n", rsp)
+			var gsrsp gsResp
+			if err := json.Unmarshal(rsp.Json, &gsrsp); err != nil {
+				logger.Println(err)
+				return
+			}
+			logger.Println("gs resp:\n", gsrsp)
 			lock.Lock()
-			resp.Msg[strconv.Itoa(id)] = json.RawMessage(rsp.Json)
+			resp.Msg[strconv.Itoa(id)] = gsrsp
 			lock.Unlock()
 		})
 	} else {
@@ -206,7 +213,7 @@ func GMQuery(s *Server, b []byte) ([]byte, error) {
 	req.Json = d
 
 	var rsp gmResp
-	rsp.Msg = make(map[string]json.RawMessage)
+	rsp.Msg = make(map[string]gsResp)
 	lock := new(sync.Mutex)
 
 	for i := range ids {
@@ -222,11 +229,13 @@ func GMQuery(s *Server, b []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	b, err = GMEncode(d)
-	if err != nil {
-		logger.Println(err)
-		return nil, err
-	}
+	logger.Println("gs to gm resp:\n", rsp)
+
+	//	b, err = GMEncode(d)
+	//	if err != nil {
+	//		logger.Println(err)
+	//		return nil, err
+	//	}
 
 	return b, nil
 }
